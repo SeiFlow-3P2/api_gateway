@@ -1,0 +1,3 @@
+server:
+  addr: ":3000"
+  shutdown_timeout: 10

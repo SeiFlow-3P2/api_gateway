@@ -1,3 +1,9 @@
 server:
-  addr: ":3000"
-  shutdown_timeout: 10
+  host: "0.0.0.0"
+  port: "8080"
+  shutdown_timeout: 10s
+board_serivce:
+  address: "localhost:9090"
+gateway:
+  protected_routes:
+    - "/v1/board"

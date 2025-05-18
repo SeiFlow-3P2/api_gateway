@@ -6,10 +6,11 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
-	"time"
 
 	"github.com/SeiFlow-3P2/api_gateway/internal/config"
+	"github.com/SeiFlow-3P2/api_gateway/internal/middleware"
 	boardProto "github.com/SeiFlow-3P2/board_service/pkg/proto/v1"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
@@ -17,23 +18,36 @@ import (
 )
 
 type App struct {
-	addr            string
-	opts            []grpc.DialOption
-	mux             *runtime.ServeMux
-	srv             *http.Server
-	shutdownTimeout int
+	conf *config.Config
+	opts []grpc.DialOption
+	mux  *runtime.ServeMux
+	srv  *http.Server
+}
+
+func CustomHeaderMatcher(key string) (string, bool) {
+	lower := strings.ToLower(key)
+
+	switch lower {
+	case middleware.UserIDHeader:
+		return lower, true
+	case "authorization":
+		return lower, true
+	default:
+		return runtime.DefaultHeaderMatcher(key)
+	}
 }
 
 func NewApp(config *config.Config) *App {
 	return &App{
-		addr: config.GetServerAddr(),
+		conf: config,
 		opts: []grpc.DialOption{
 			grpc.WithTransportCredentials(
 				insecure.NewCredentials(),
 			),
 		},
-		mux:             runtime.NewServeMux(),
-		shutdownTimeout: config.GetShutdownTimeout(),
+		mux: runtime.NewServeMux(
+			runtime.WithIncomingHeaderMatcher(CustomHeaderMatcher),
+		),
 	}
 }
 
@@ -44,15 +58,20 @@ func (a *App) Run() error {
 	if err := boardProto.RegisterBoardServiceHandlerFromEndpoint(
 		ctx,
 		a.mux,
-		"localhost:9090",
+		a.conf.GetBoardServiceAddr(),
 		a.opts,
 	); err != nil {
 		return err
 	}
 
+	authMW := middleware.NewAuthMiddleware( /*client, */ a.conf.GetProtectedRoutes())
+
+	var handler http.Handler = a.mux
+	handler = authMW.Handler(handler)
+
 	a.srv = &http.Server{
-		Addr:    a.addr,
-		Handler: a.mux,
+		Addr:    a.conf.GetServerAddr(),
+		Handler: handler,
 	}
 
 	serverErrors := make(chan error, 1)
@@ -61,7 +80,7 @@ func (a *App) Run() error {
 	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
 
 	go func() {
-		log.Printf("Starting server on %s", a.addr)
+		log.Printf("Starting server on %s", a.conf.GetServerAddr())
 		serverErrors <- a.srv.ListenAndServe()
 	}()
 
@@ -78,7 +97,7 @@ func (a *App) Run() error {
 func (a *App) gracefulShutdown(ctx context.Context) error {
 	shutdownCtx, cancel := context.WithTimeout(
 		ctx,
-		time.Duration(a.shutdownTimeout)*time.Second,
+		a.conf.GetShutdownTimeoutDuration(),
 	)
 	defer cancel()
 

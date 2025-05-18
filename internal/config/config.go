@@ -3,15 +3,23 @@ package config
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
 	Server struct {
-		Addr            string `yaml:"addr"`
-		ShutdownTimeout int    `yaml:"shutdown_timeout"`
+		Host            string        `yaml:"host"`
+		Port            string        `yaml:"port"`
+		ShutdownTimeout time.Duration `yaml:"shutdown_timeout"`
 	} `yaml:"server"`
+	BoardService struct {
+		Address string `yaml:"address"`
+	} `yaml:"board_service"`
+	Gateway struct {
+		ProtectedRoutes []string `yaml:"protected_routes"`
+	} `yaml:"gateway"`
 }
 
 func LoadConfig(configPath string) (*Config, error) {
@@ -30,9 +38,21 @@ func LoadConfig(configPath string) (*Config, error) {
 }
 
 func (c *Config) GetServerAddr() string {
-	return c.Server.Addr
+	return fmt.Sprintf("%s:%s", c.Server.Host, c.Server.Port)
 }
 
-func (c *Config) GetShutdownTimeout() int {
+func (c *Config) GetShutdownTimeoutDuration() time.Duration {
 	return c.Server.ShutdownTimeout
+}
+
+func (c *Config) GetShutdownTimeoutSeconds() int {
+	return int(c.Server.ShutdownTimeout.Seconds())
+}
+
+func (c *Config) GetBoardServiceAddr() string {
+	return c.BoardService.Address
+}
+
+func (c *Config) GetProtectedRoutes() []string {
+	return c.Gateway.ProtectedRoutes
 }

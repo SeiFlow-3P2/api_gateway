@@ -4,6 +4,12 @@ server:
   shutdown_timeout: 10s
 board_serivce:
   address: "localhost:9090"
+payment_service:
+  address: "localhost:9091"
+calendar_service:
+  address: "localhost:9092"
+auth_service:
+  address: "localhost:9093"
 gateway:
   protected_routes:
     - "/v1/board"

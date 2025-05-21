@@ -4,21 +4,23 @@ import (
 	"log"
 	"net/http"
 	"strings"
+
+	authProto "github.com/SeiFlow-3P2/auth_service/pkg/proto/v1"
 )
 
 const UserIDHeader = "x-user-id"
 
 type AuthMiddleware struct {
-	// authClient        authProto.AuthServiceClient
+	authClient        authProto.AuthServiceClient
 	protectedPrefixes []string
 }
 
 func NewAuthMiddleware(
-	/*client authProto.AuthServiceClient, */
+	client authProto.AuthServiceClient,
 	protectedPrefixes []string,
 ) *AuthMiddleware {
 	return &AuthMiddleware{
-		// authClient: client,
+		authClient:        client,
 		protectedPrefixes: protectedPrefixes,
 	}
 }

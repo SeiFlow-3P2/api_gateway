@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -11,7 +12,10 @@ import (
 
 	"github.com/SeiFlow-3P2/api_gateway/internal/config"
 	"github.com/SeiFlow-3P2/api_gateway/internal/middleware"
+	authProto "github.com/SeiFlow-3P2/auth_service/pkg/proto/v1"
 	boardProto "github.com/SeiFlow-3P2/board_service/pkg/proto/v1"
+	calendarProto "github.com/SeiFlow-3P2/calendar_service/pkg/proto/v1"
+	paymentProto "github.com/SeiFlow-3P2/payment_service/pkg/proto/v1"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -61,10 +65,44 @@ func (a *App) Run() error {
 		a.conf.GetBoardServiceAddr(),
 		a.opts,
 	); err != nil {
-		return err
+		return fmt.Errorf("failed to register board service: %w", err)
 	}
 
-	authMW := middleware.NewAuthMiddleware( /*client, */ a.conf.GetProtectedRoutes())
+	if err := paymentProto.RegisterPaymentServiceHandlerFromEndpoint(
+		ctx,
+		a.mux,
+		a.conf.GetPaymentServiceAddr(),
+		a.opts,
+	); err != nil {
+		return fmt.Errorf("failed to register payment service: %w", err)
+	}
+
+	if err := calendarProto.RegisterCalendarServiceHandlerFromEndpoint(
+		ctx,
+		a.mux,
+		a.conf.GetCalendarServiceAddr(),
+		a.opts,
+	); err != nil {
+		return fmt.Errorf("failed to register calendar service: %w", err)
+	}
+
+	if err := authProto.RegisterAuthServiceHandlerFromEndpoint(
+		ctx,
+		a.mux,
+		a.conf.GetAuthServiceAddr(),
+		a.opts,
+	); err != nil {
+		return fmt.Errorf("failed to register auth service: %w", err)
+	}
+
+	conn, err := grpc.NewClient(a.conf.GetAuthServiceAddr(), a.opts...)
+	if err != nil {
+		return fmt.Errorf("failed to connect to auth client: %w", err)
+	}
+	defer conn.Close()
+	authClient := authProto.NewAuthServiceClient(conn)
+
+	authMW := middleware.NewAuthMiddleware(authClient, a.conf.GetProtectedRoutes())
 
 	var handler http.Handler = a.mux
 	handler = authMW.Handler(handler)

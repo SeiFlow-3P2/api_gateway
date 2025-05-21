@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"strings"
@@ -45,13 +46,25 @@ func (am *AuthMiddleware) Handler(next http.Handler) http.Handler {
 
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
-			http.Error(w, "Unauthorized: Missing token", http.StatusUnauthorized)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode(map[string]any{
+				"code":    16,
+				"message": "Unauthorized: missing token",
+				"details": []any{},
+			})
 			return
 		}
 
-		parts := strings.Split(authHeader, "")
+		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
-			http.Error(w, "Unauthorized: Invalid token format", http.StatusUnauthorized)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode(map[string]any{
+				"code":    16,
+				"message": "Unauthorized: invalid token format",
+				"details": []any{},
+			})
 			return
 		}
 

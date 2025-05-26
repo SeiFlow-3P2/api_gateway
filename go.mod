@@ -4,7 +4,7 @@ go 1.24.3
 
 require (
 	github.com/SeiFlow-3P2/auth_service v0.0.1
-	github.com/SeiFlow-3P2/board_service v0.1.1
+	github.com/SeiFlow-3P2/board_service v0.1.2
 	github.com/SeiFlow-3P2/calendar_service v0.0.2
 	github.com/SeiFlow-3P2/payment_service v0.1.0
 	github.com/gin-gonic/gin v1.10.1

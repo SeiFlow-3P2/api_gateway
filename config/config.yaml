@@ -13,3 +13,5 @@ auth_service:
 gateway:
   protected_routes:
     - "/v1/boards"
+    - "/v1/columns"
+    - "/v1/tasks"

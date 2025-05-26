@@ -1,7 +1,7 @@
 github.com/SeiFlow-3P2/auth_service v0.0.1 h1:8rPPss08Yk2IGcGL09k9pVdW60DECQS9X+VK7TIvTNc=
 github.com/SeiFlow-3P2/auth_service v0.0.1/go.mod h1:na5YLhFp/01LzBrX5aqLXbaYO+H94UJ4c7W29JcgV34=
-github.com/SeiFlow-3P2/board_service v0.1.0 h1:1fnmJuweIWB2tmmD85RhnowLohqphSLHtgzOT4ied0U=
-github.com/SeiFlow-3P2/board_service v0.1.0/go.mod h1:oG6S8LkIITJfF4flQfCA37kbttdNJl2I2g7axPxc7xk=
+github.com/SeiFlow-3P2/board_service v0.1.1 h1:5n6/C70WbPomIdWH161D8g6kyDf7rCjhw1kn7iebbrs=
+github.com/SeiFlow-3P2/board_service v0.1.1/go.mod h1:TRkQGUVDNxhBEv/DvcOLHOMqhM2uJ3+2EfRdNLcgnoM=
 github.com/SeiFlow-3P2/calendar_service v0.0.2 h1:6cut/WXw6nh8MbgFAbFhyRsK+NhHZVEzrSqFAw+d+7k=
 github.com/SeiFlow-3P2/calendar_service v0.0.2/go.mod h1:DGbWhaSJjCD4zIcGGLXDchaEUkgOfvwVdtDTCb7Sedg=
 github.com/SeiFlow-3P2/payment_service v0.1.0 h1:6uTUTeXJW5TCka5D7y+jtxFdbponuGhKKq5fe7QbtpM=

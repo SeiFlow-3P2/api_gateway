@@ -22,6 +22,7 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/metadata"
 )
 
 type App struct {
@@ -61,9 +62,19 @@ func NewApp(config *config.Config) *App {
 		router: router,
 		gwmux: runtime.NewServeMux(
 			runtime.WithOutgoingHeaderMatcher(util.IsHeaderAllowed),
-			// runtime.WithMetadata(func(ctx context.Context, req *http.Request) metadata.MD {
+			runtime.WithMetadata(func(
+				ctx context.Context,
+				req *http.Request,
+			) metadata.MD {
+				md := make(metadata.MD)
 
-			// }),
+				if userID, ok := ctx.Value(middleware.UserIDHeader).(string); ok {
+					md.Set("x-user-id", userID)
+					log.Printf("gRPC Metadata: Forwarding x-user-id: %s", userID)
+				}
+
+				return md
+			}),
 
 			runtime.WithErrorHandler(func(
 				ctx context.Context,

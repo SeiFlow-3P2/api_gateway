@@ -14,16 +14,24 @@ import (
 	"github.com/SeiFlow-3P2/api_gateway/internal/config"
 	"github.com/SeiFlow-3P2/api_gateway/internal/handler"
 	"github.com/SeiFlow-3P2/api_gateway/internal/middleware"
-	"github.com/SeiFlow-3P2/api_gateway/internal/util"
 	authProto "github.com/SeiFlow-3P2/auth_service/pkg/proto/v1"
+	"github.com/SeiFlow-3P2/shared/telemetry"
 	"github.com/gin-gonic/gin"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/metadata"
 )
+
+var (
+	name         = "nota.gateway"
+	otelEndpoint = "localhost:4317"
+)
+
+var allowedHeaders = map[string]struct{}{
+	"x-request-id": {},
+}
 
 type App struct {
 	conf     *config.Config
@@ -61,32 +69,10 @@ func NewApp(config *config.Config) *App {
 		conf:   config,
 		router: router,
 		gwmux: runtime.NewServeMux(
-			runtime.WithOutgoingHeaderMatcher(util.IsHeaderAllowed),
-			runtime.WithMetadata(func(
-				ctx context.Context,
-				req *http.Request,
-			) metadata.MD {
-				md := make(metadata.MD)
-
-				if userID, ok := ctx.Value(middleware.UserIDHeader).(string); ok {
-					md.Set("x-user-id", userID)
-					log.Printf("gRPC Metadata: Forwarding x-user-id: %s", userID)
-				}
-
-				return md
-			}),
-
-			runtime.WithErrorHandler(func(
-				ctx context.Context,
-				mux *runtime.ServeMux,
-				m runtime.Marshaler,
-				w http.ResponseWriter,
-				r *http.Request,
-				err error,
-			) {
-				log.Printf("GRPC Gateway Error: %v, Path: %s", err, r.URL.Path)
-				runtime.DefaultHTTPErrorHandler(ctx, mux, m, w, r, err)
-			}),
+			runtime.WithOutgoingHeaderMatcher(handler.IsHeaderAllowed(allowedHeaders)),
+			runtime.WithMetadata(handler.MetadataHandler),
+			runtime.WithErrorHandler(handler.ErrorHandler),
+			runtime.WithRoutingErrorHandler(handler.RoutingErrorHandler),
 		),
 		dialOpts: []grpc.DialOption{
 			grpc.WithTransportCredentials(
@@ -101,25 +87,25 @@ func (a *App) Start(ctx context.Context) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	// shutdownTracer, err := telemetry.NewTracerProvider(ctx, "nota.gateway", "localhost:4317")
-	// if err != nil {
-	// 	log.Fatalf("failed to create tracer provider: %v", err)
-	// }
-	// defer func() {
-	// 	if err := shutdownTracer(ctx); err != nil {
-	// 		log.Printf("failed to shutdown tracer provider: %v", err)
-	// 	}
-	// }()
+	shutdownTracer, err := telemetry.NewTracerProvider(ctx, name, otelEndpoint)
+	if err != nil {
+		log.Fatalf("failed to create tracer provider: %v", err)
+	}
+	defer func() {
+		if err := shutdownTracer(ctx); err != nil {
+			log.Printf("failed to shutdown tracer provider: %v", err)
+		}
+	}()
 
-	// shutdownMeter, err := telemetry.NewMeterProvider(ctx, "nota.gateway", "localhost:4317")
-	// if err != nil {
-	// 	log.Fatalf("failed to create meter provider: %v", err)
-	// }
-	// defer func() {
-	// 	if err := shutdownMeter(ctx); err != nil {
-	// 		log.Printf("failed to shutdown meter provider: %v", err)
-	// 	}
-	// }()
+	shutdownMeter, err := telemetry.NewMeterProvider(ctx, name, otelEndpoint)
+	if err != nil {
+		log.Fatalf("failed to create meter provider: %v", err)
+	}
+	defer func() {
+		if err := shutdownMeter(ctx); err != nil {
+			log.Printf("failed to shutdown meter provider: %v", err)
+		}
+	}()
 
 	if err := handler.SetupHandlers(ctx, a.conf, a.gwmux, a.dialOpts); err != nil {
 		return fmt.Errorf("failed to setup handlers: %w", err)

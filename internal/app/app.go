@@ -44,7 +44,7 @@ func CustomHeaderMatcher(key string) (string, bool) {
 	lower := strings.ToLower(key)
 
 	switch lower {
-	case middleware.UserIDHeader:
+	case "x-user-id":
 		return lower, true
 	case "authorization":
 		return lower, true

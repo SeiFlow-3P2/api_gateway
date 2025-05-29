@@ -26,10 +26,10 @@ func IsHeaderAllowed(allowedHeaders map[string]struct{}) func(string) (string, b
 func MetadataHandler(ctx context.Context, req *http.Request) metadata.MD {
 	md := metadata.MD{}
 
-	accessToken, ok := ctx.Value("accessToken").(string)
-	if ok {
-		md.Set("x-access-token", accessToken)
-	}
+	// accessToken, ok := ctx.Value("accessToken").(string)
+	// if ok {
+	// 	md.Set("x-access-token", accessToken)
+	// }
 
 	userID, ok := ctx.Value("userID").(string)
 	fmt.Println(userID)

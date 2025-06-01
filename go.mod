@@ -10,6 +10,7 @@ require (
 	github.com/SeiFlow-3P2/shared v0.1.0
 	github.com/gin-gonic/gin v1.10.1
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.3
+	github.com/joho/godotenv v1.5.1
 	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.61.0
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.61.0
 	google.golang.org/grpc v1.72.1

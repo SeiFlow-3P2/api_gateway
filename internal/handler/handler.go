@@ -4,7 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/SeiFlow-3P2/api_gateway/internal/config"
+	"github.com/SeiFlow-3P2/api_gateway/pkg/config"
+	"github.com/SeiFlow-3P2/api_gateway/pkg/env"
 	authProto "github.com/SeiFlow-3P2/auth_service/pkg/proto/v1"
 	boardProto "github.com/SeiFlow-3P2/board_service/pkg/proto/v1"
 	calendarProto "github.com/SeiFlow-3P2/calendar_service/pkg/proto/v1"
@@ -22,7 +23,7 @@ func SetupHandlers(
 	if err := authProto.RegisterAuthServiceHandlerFromEndpoint(
 		ctx,
 		gwmux,
-		conf.GetAuthServiceAddr(),
+		env.GetAuthServiceAddr(),
 		dialOpts,
 	); err != nil {
 		return fmt.Errorf("failed to register auth service: %w", err)
@@ -31,7 +32,7 @@ func SetupHandlers(
 	if err := boardProto.RegisterBoardServiceHandlerFromEndpoint(
 		ctx,
 		gwmux,
-		conf.GetBoardServiceAddr(),
+		env.GetBoardServiceAddr(),
 		dialOpts,
 	); err != nil {
 		return fmt.Errorf("failed to register board service: %w", err)
@@ -40,7 +41,7 @@ func SetupHandlers(
 	if err := paymentProto.RegisterPaymentServiceHandlerFromEndpoint(
 		ctx,
 		gwmux,
-		conf.GetPaymentServiceAddr(),
+		env.GetPaymentServiceAddr(),
 		dialOpts,
 	); err != nil {
 		return fmt.Errorf("failed to register payment service: %w", err)
@@ -49,7 +50,7 @@ func SetupHandlers(
 	if err := calendarProto.RegisterCalendarServiceHandlerFromEndpoint(
 		ctx,
 		gwmux,
-		conf.GetCalendarServiceAddr(),
+		env.GetCalendarServiceAddr(),
 		dialOpts,
 	); err != nil {
 		return fmt.Errorf("failed to register calendar service: %w", err)

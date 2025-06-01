@@ -1,15 +1,8 @@
 server:
+  name: "api_gateway"
   host: "0.0.0.0"
   port: "8080"
   shutdown_timeout: 10s
-board_service:
-  address: "localhost:9090"
-payment_service:
-  address: "localhost:9091"
-calendar_service:
-  address: "localhost:9092"
-auth_service:
-  address: "localhost:9093"
 gateway:
   protected_routes:
     - "/v1/boards"

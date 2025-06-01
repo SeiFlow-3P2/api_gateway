@@ -10,22 +10,11 @@ import (
 
 type Config struct {
 	Server struct {
+		Name            string        `yaml:"name"`
 		Host            string        `yaml:"host"`
 		Port            string        `yaml:"port"`
 		ShutdownTimeout time.Duration `yaml:"shutdown_timeout"`
 	} `yaml:"server"`
-	BoardService struct {
-		Address string `yaml:"address"`
-	} `yaml:"board_service"`
-	PaymentService struct {
-		Address string `yaml:"address"`
-	} `yaml:"payment_service"`
-	CalendarService struct {
-		Address string `yaml:"address"`
-	} `yaml:"calendar_service"`
-	AuthService struct {
-		Address string `yaml:"address"`
-	} `yaml:"auth_service"`
 	Gateway struct {
 		ProtectedRoutes []string `yaml:"protected_routes"`
 	} `yaml:"gateway"`
@@ -43,7 +32,31 @@ func LoadConfig(configPath string) (*Config, error) {
 		return nil, fmt.Errorf("error parsing config file: %w", err)
 	}
 
+	if config.Server.Name == "" {
+		config.Server.Name = "api_gateway"
+	}
+
+	if config.Server.Host == "" {
+		config.Server.Host = "0.0.0.0"
+	}
+
+	if config.Server.Port == "" {
+		return nil, fmt.Errorf("server.port is required")
+	}
+
+	if config.Server.ShutdownTimeout == 0 {
+		config.Server.ShutdownTimeout = 10 * time.Second
+	}
+
+	if len(config.Gateway.ProtectedRoutes) == 0 {
+		return nil, fmt.Errorf("gateway.protected_routes is required")
+	}
+
 	return config, nil
+}
+
+func (c *Config) GetServerName() string {
+	return c.Server.Name
 }
 
 func (c *Config) GetServerAddr() string {
@@ -58,22 +71,6 @@ func (c *Config) GetShutdownTimeoutSeconds() int {
 	return int(c.Server.ShutdownTimeout.Seconds())
 }
 
-func (c *Config) GetBoardServiceAddr() string {
-	return c.BoardService.Address
-}
-
 func (c *Config) GetProtectedRoutes() []string {
 	return c.Gateway.ProtectedRoutes
-}
-
-func (c *Config) GetPaymentServiceAddr() string {
-	return c.PaymentService.Address
-}
-
-func (c *Config) GetCalendarServiceAddr() string {
-	return c.CalendarService.Address
-}
-
-func (c *Config) GetAuthServiceAddr() string {
-	return c.AuthService.Address
 }

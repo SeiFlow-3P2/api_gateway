@@ -11,9 +11,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/SeiFlow-3P2/api_gateway/internal/config"
 	"github.com/SeiFlow-3P2/api_gateway/internal/handler"
 	"github.com/SeiFlow-3P2/api_gateway/internal/middleware"
+	"github.com/SeiFlow-3P2/api_gateway/pkg/config"
+	"github.com/SeiFlow-3P2/api_gateway/pkg/env"
 	authProto "github.com/SeiFlow-3P2/auth_service/pkg/proto/v1"
 	"github.com/SeiFlow-3P2/shared/telemetry"
 	"github.com/gin-gonic/gin"
@@ -22,11 +23,6 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-)
-
-var (
-	name         = "nota.gateway"
-	otelEndpoint = "localhost:4317"
 )
 
 var allowedHeaders = map[string]struct{}{
@@ -87,7 +83,7 @@ func (a *App) Start(ctx context.Context) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	shutdownTracer, err := telemetry.NewTracerProvider(ctx, name, otelEndpoint)
+	shutdownTracer, err := telemetry.NewTracerProvider(ctx, a.conf.GetServerName(), env.GetOtelAddr())
 	if err != nil {
 		log.Fatalf("failed to create tracer provider: %v", err)
 	}
@@ -97,7 +93,7 @@ func (a *App) Start(ctx context.Context) error {
 		}
 	}()
 
-	shutdownMeter, err := telemetry.NewMeterProvider(ctx, name, otelEndpoint)
+	shutdownMeter, err := telemetry.NewMeterProvider(ctx, a.conf.GetServerName(), env.GetOtelAddr())
 	if err != nil {
 		log.Fatalf("failed to create meter provider: %v", err)
 	}
@@ -111,7 +107,7 @@ func (a *App) Start(ctx context.Context) error {
 		return fmt.Errorf("failed to setup handlers: %w", err)
 	}
 
-	conn, err := grpc.NewClient(a.conf.GetAuthServiceAddr(), a.dialOpts...)
+	conn, err := grpc.NewClient(env.GetAuthServiceAddr(), a.dialOpts...)
 	if err != nil {
 		return fmt.Errorf("failed to connect to auth client: %w", err)
 	}
@@ -133,6 +129,7 @@ func (a *App) Start(ctx context.Context) error {
 	}
 
 	go func() {
+		log.Printf("Starting server on %s", a.conf.GetServerAddr())
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("failed to start server: %v", err)
 		}

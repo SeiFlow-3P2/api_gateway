@@ -18,6 +18,11 @@ func LoadEnv() error {
 		return fmt.Errorf("APP_MODE is not set or invalid (dev/prod)")
 	}
 
+	port := os.Getenv("PORT")
+	if port == "" {
+		return fmt.Errorf("PORT is not set")
+	}
+
 	boardServiceAddr := os.Getenv("BOARD_SERVICE_ADDR")
 	if boardServiceAddr == "" {
 		return fmt.Errorf("BOARD_SERVICE_ADDR is not set")
@@ -48,6 +53,10 @@ func LoadEnv() error {
 
 func IsProd() bool {
 	return os.Getenv("APP_MODE") == "prod"
+}
+
+func GetPort() string {
+	return os.Getenv("PORT")
 }
 
 func GetBoardServiceAddr() string {

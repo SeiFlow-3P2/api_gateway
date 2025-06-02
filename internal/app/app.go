@@ -124,12 +124,12 @@ func (a *App) Start(ctx context.Context) error {
 	a.router.Group("/v1/*{grpc_gateway}").Any("", gin.WrapH(a.gwmux))
 
 	srv := &http.Server{
-		Addr:    a.conf.GetServerAddr(),
+		Addr:    a.conf.Server.Host + ":" + env.GetPort(),
 		Handler: a.router,
 	}
 
 	go func() {
-		log.Printf("Starting server on %s", a.conf.GetServerAddr())
+		log.Printf("Starting server on %s", a.conf.Server.Host+":"+env.GetPort())
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("failed to start server: %v", err)
 		}

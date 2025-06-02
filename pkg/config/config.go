@@ -12,7 +12,6 @@ type Config struct {
 	Server struct {
 		Name            string        `yaml:"name"`
 		Host            string        `yaml:"host"`
-		Port            string        `yaml:"port"`
 		ShutdownTimeout time.Duration `yaml:"shutdown_timeout"`
 	} `yaml:"server"`
 	Gateway struct {
@@ -40,10 +39,6 @@ func LoadConfig(configPath string) (*Config, error) {
 		config.Server.Host = "0.0.0.0"
 	}
 
-	if config.Server.Port == "" {
-		return nil, fmt.Errorf("server.port is required")
-	}
-
 	if config.Server.ShutdownTimeout == 0 {
 		config.Server.ShutdownTimeout = 10 * time.Second
 	}
@@ -59,9 +54,9 @@ func (c *Config) GetServerName() string {
 	return c.Server.Name
 }
 
-func (c *Config) GetServerAddr() string {
-	return fmt.Sprintf("%s:%s", c.Server.Host, c.Server.Port)
-}
+// func (c *Config) GetServerAddr() string {
+// 	return fmt.Sprintf("%s:%s", c.Server.Host, c.Server.Port)
+// }
 
 func (c *Config) GetShutdownTimeoutDuration() time.Duration {
 	return c.Server.ShutdownTimeout

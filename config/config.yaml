@@ -1,7 +1,6 @@
 server:
   name: "api_gateway"
   host: "0.0.0.0"
-  port: "8080"
   shutdown_timeout: 10s
 gateway:
   protected_routes:

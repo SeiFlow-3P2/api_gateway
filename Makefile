@@ -1,19 +1,19 @@
 env:
 	@if [ ! -f .env ]; then \
 		cp .env.example .env; \
-		echo "Создан файл .env из .env.example"; \
+		echo ".env created from .env.example"; \
 	else \
-		echo "Файл .env уже существует"; \
+		echo ".env already exists"; \
 	fi
 
 api-gateway-build:
 	docker compose --env-file .env build
-	@echo "Сборка завершена"
+	@echo "Build completed"
 
 api-gateway-up:
 	docker compose --env-file .env up -d
-	@echo "Сервис запущен"
+	@echo "Service started"
 
 api-gateway-down:
 	docker compose --env-file .env down
-	@echo "Сервис остановлен"
+	@echo "Service stopped"

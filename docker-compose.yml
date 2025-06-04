@@ -1,0 +1,22 @@
+services:
+  api-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "${PORT}:8080"
+    environment:
+      PORT: ${PORT}
+      BOARD_SERVICE_ADDR: ${BOARD_SERVICE_ADDR}
+      PAYMENT_SERVICE_ADDR: ${PAYMENT_SERVICE_ADDR}
+      CALENDAR_SERVICE_ADDR: ${CALENDAR_SERVICE_ADDR}
+      AUTH_SERVICE_ADDR: ${AUTH_SERVICE_ADDR}
+      OTEL_ADDR: ${OTEL_ADDR}
+      APP_MODE: ${APP_MODE}
+    volumes:
+      - ./config:/root/config:ro
+    restart: unless-stopped
+
+volumes:
+  config-data:

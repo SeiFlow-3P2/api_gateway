@@ -61,6 +61,8 @@ func NewApp(config *config.Config) *App {
 		}),
 	))
 
+	router.Use(cors.Default())
+
 	return &App{
 		conf:   config,
 		router: router,

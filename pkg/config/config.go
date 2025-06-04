@@ -54,10 +54,6 @@ func (c *Config) GetServerName() string {
 	return c.Server.Name
 }
 
-// func (c *Config) GetServerAddr() string {
-// 	return fmt.Sprintf("%s:%s", c.Server.Host, c.Server.Port)
-// }
-
 func (c *Config) GetShutdownTimeoutDuration() time.Duration {
 	return c.Server.ShutdownTimeout
 }
